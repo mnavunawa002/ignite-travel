@@ -1,7 +1,7 @@
 [project]
 name = "ignite-travel"
 version = "0.1.6"
-description = "Add your description here"
+description = "The Ignite Travel Unofficial SDK provides a client to interact with the Ignite Travel SOAP-based web services. It allows you to manage room lists, retrieve availability, update inventory, and get bookings for resorts."
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
