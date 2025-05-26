@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from typing import List, Optional
-from datetime import date
+from datetime import date, datetime
 
 
 class LinkedRate(BaseModel):
@@ -50,6 +50,21 @@ class BookingDetail(BaseModel):
   booking_number: str = Field()
   resort_id: int = Field()
   resort_name: str = Field()
+  resort_currency: Optional[str] = Field(default=None)
   booking_status_id: int = Field()
   booking_status_description: str = Field()
   rooms: List[RoomDetail] = Field()
+
+
+class CancelledBooking(BaseModel):
+  booking_id: int = Field()
+  booking_number: str = Field()
+  booking_status_id: int = Field()
+  booking_status_description: str = Field()
+  booking_change_date: datetime = Field()
+
+  @field_validator("booking_change_date", mode="before")
+  def parse_booking_change_date(cls, value):
+    if isinstance(value, str):
+      return datetime.strptime(value, "%d-%m-%Y %H:%M:%S")
+    return value

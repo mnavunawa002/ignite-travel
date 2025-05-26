@@ -49,4 +49,8 @@ To use the Ignite Travel SDK, you need to set up your environment with the neces
     # Get bookings for a specific date range
     bookings = client.get_bookings(resort_id, start_date, end_date)
     print(bookings)
+
+    # Get cancelled bookings for a specific date range
+    cancelled_bookings = client.get_cancelled_bookings(resort_id, start_date, end_date)
+    print(cancelled_bookings)
     ```

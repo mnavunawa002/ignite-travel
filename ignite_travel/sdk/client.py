@@ -184,7 +184,7 @@ class DimsInventoryClient:
     message = root.find(".//Message").text
     return message
   
-  def get_bookings(self, resort_id:int, start_date:str, end_date:str, action_header: str = "GetBookingsListWithRoomRateIds"):
+  def get_bookings(self, resort_id:int, start_date:str, end_date:str, action_header: str = "GetBookingsListWithRoomRateIds") -> List[BookingDetail]:
     """
     Get the bookings for a given resort and date range
     """
@@ -193,8 +193,8 @@ class DimsInventoryClient:
     except ValueError:
       raise ValueError("Resort ID must be an integer")
     try:
-      start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-      end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+      start_date = datetime.strptime(start_date, "%Y-%m-%d").date().strftime("%d-%b-%Y")  # 1st June 2025
+      end_date = datetime.strptime(end_date, "%Y-%m-%d").date().strftime("%d-%b-%Y")  # 30th June 2025
     except ValueError:
       raise ValueError("Invalid date format")
     soap_body = f"""<GetBookingsListWithRoomRateIds xmlns="https://dims.ignitetravel.com/IMSXML">
@@ -212,9 +212,119 @@ class DimsInventoryClient:
     response = self.make_request("POST", soap_body, action_header)
     root = ET.fromstring(response)
     # first check if there are any bookings before parsing each booking
-    message_type = root.find(".//MessageType").text
-    message = root.find(".//Message").text
-    if message_type == "Error":
-        # add logging
+    message_type = root.find(".//MessageType")
+    message = root.find(".//Message")
+    if message_type and message_type.text == "Error":
         return []
-    
+    # parse the bookings
+    bookings = []
+    for booking in root.findall(".//Booking"):
+      booking_number = booking.find(".//BookingNumber").text
+      booking_details = booking.find(".//BookingDetails")
+      booking_status_id = booking_details.find(".//BookingStatusId").text
+      booking_status_description = booking_details.find(".//BookingStatusDescription").text
+      resort_id = booking_details.find(".//ResortId").text
+      resort_name = booking_details.find(".//ResortName").text
+      resort_currency = booking_details.find(".//ResortCurrency").text
+      rooms = []
+      for room in booking.findall(".//Rooms/Room"):
+        booking_id = room.find(".//BookingId").text
+        room_details = room.find(".//RoomDetails")
+        room_id = room_details.find(".//RoomId").text
+        room_description = room_details.find(".//RoomDescription").text
+        date_booked = room_details.find(".//DateBooked").text
+        check_in = room_details.find(".//CheckIn").text
+        nights = room_details.find(".//Nights").text
+        adults = room_details.find(".//Adults").text
+        children = room_details.find(".//Children").text
+        infants = room_details.find(".//Infants").text
+        special_requests = room_details.find(".//SpecialRequests").text
+        surname = room_details.find(".//Surname").text
+        address = room_details.find(".//Address").text
+        suburb = room_details.find(".//Suburb").text
+        state = room_details.find(".//State").text
+        postcode = room_details.find(".//Postcode").text
+        email_address = room_details.find(".//EmailAddress").text
+        phone_number = room_details.find(".//PhoneNumber").text
+        room_detail = RoomDetail(
+          booking_id=booking_id,
+          room_id=room_id,
+          room_description=room_description,
+          date_booked=date_booked,
+          check_in=check_in,
+          nights=nights,
+          adults=adults,
+          children=children,
+          infants=infants,
+          special_requests=special_requests,
+          surname=surname,
+          address=address,
+          suburb=suburb,
+          state=state,
+          postcode=postcode,
+          email_address=email_address,
+          phone_number=phone_number
+        )
+        rooms.append(room_detail)
+      booking_detail = BookingDetail(
+        booking_number=booking_number,
+        booking_status_id=booking_status_id,
+        booking_status_description=booking_status_description,
+        rooms=rooms,
+        resort_id=resort_id,
+        resort_name=resort_name,
+        resort_currency=resort_currency
+      )
+      bookings.append(booking_detail)
+    return bookings
+  
+
+  def get_cancelled_bookings(self, resort_id:int, start_date:str, end_date:str, action_header: str = "RetrieveCancelledBookings"):
+    """
+    Get the cancelled bookings for a given resort and date range
+    """
+    try:
+      resort_id = int(resort_id)
+    except ValueError:
+      raise ValueError("Resort ID must be an integer")
+    try:
+      start_date = datetime.strptime(start_date, "%Y-%m-%d").date().strftime("%d-%m-%Y")
+      end_date = datetime.strptime(end_date, "%Y-%m-%d").date().strftime("%d-%m-%Y")
+    except ValueError:
+      raise ValueError("Invalid date format")
+    soap_body = f"""<RetrieveCancelledBookings xmlns="https://dims.ignitetravel.com/IMSXML">
+            <Message>
+                <RewardsCorpIMS xmlns="">
+                    <Request>RetrieveCancelledBookings</Request>
+                    <ResortId>{resort_id}</ResortId>
+                    <Dates>
+                        <Date>{start_date}</Date>
+                        <Date>{end_date}</Date>
+                    </Dates>
+                </RewardsCorpIMS>
+            </Message>
+        </RetrieveCancelledBookings>"""
+    response = self.make_request("POST", soap_body, action_header)
+    root = ET.fromstring(response)
+    # first check if there are any bookings before parsing each booking
+    message_type = root.find(".//MessageType")
+    message = root.find(".//Message")
+    if message_type and message_type.text == "Error":
+        return []
+    # parse the bookings
+    bookings = []
+    for booking in root.findall(".//Booking"):
+      booking_id = booking.find(".//BookingId").text
+      booking_number = booking.find(".//BookingNumber").text
+      booking_status_id = booking.find(".//BookingStatusId").text
+      booking_status_description = booking.find(".//BookingStatusDescription").text
+      booking_change_date = booking.find(".//BookingChangeDate").text
+      cancelled_booking = CancelledBooking(
+        booking_id=booking_id,
+        booking_number=booking_number,
+        booking_status_id=booking_status_id,
+        booking_status_description=booking_status_description,
+        booking_change_date=booking_change_date
+      )
+      bookings.append(cancelled_booking)
+    return bookings
