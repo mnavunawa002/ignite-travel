@@ -1,6 +1,6 @@
 [project]
 name = "ignite-travel"
-version = "0.1.9"
+version = "0.1.11"
 description = "SDK for interacting with Ignite Travel SOAP services, managing rooms, availability, inventory, and bookings."
 readme = "README.md"
 requires-python = ">=3.9"
