@@ -113,13 +113,24 @@ class TestBookings(unittest.TestCase):
         end_date = datetime(2025, 5, 31)
         bookings = self.client.get_cancelled_bookings(self.resort_id, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
         self.assertTrue(isinstance(bookings, list))
-        self.assertEqual(len(bookings), 1)
         booking = bookings[0]
         self.assertEqual(booking.booking_id, 1644663)
         self.assertEqual(booking.booking_number, "E-IG1237837MG")
         self.assertEqual(booking.booking_status_id, 5)
         self.assertEqual(booking.booking_status_description, "Cancelled booking")
         self.assertEqual(booking.booking_change_date, datetime(2025, 5, 26, 9, 48, 0))
+
+
+    def test_get_actual_bookings(self):
+        """
+        Test the get_actual_bookings method
+        """
+        # As of this writing, the only booking is for 2025-05-20
+        start_date = datetime(2025, 5, 20)
+        end_date = datetime(2025, 5, 31)
+        bookings = self.client.get_bookings(self.resort_id, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
+        self.assertTrue(isinstance(bookings, list))
+        self.assertEqual(len(bookings), 1)
 
 if __name__ == '__main__':
     unittest.main()

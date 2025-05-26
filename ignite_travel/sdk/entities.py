@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from typing import List, Optional
 from datetime import date, datetime
+from dateutil.parser import parse
 
 
 class LinkedRate(BaseModel):
@@ -30,7 +31,7 @@ class RoomDetail(BaseModel):
   booking_id: int = Field()  # The IMS booking id
   room_description: str = Field()
   room_id: int = Field()
-  date_booked: date = Field()  # date of the booking
+  date_booked: datetime = Field()  # date of the booking
   check_in: date = Field()  # check in date
   nights: int = Field()  # number of nights
   adults: int = Field()  # number of adults
@@ -44,6 +45,18 @@ class RoomDetail(BaseModel):
   postcode: Optional[str] = Field(default=None)  # postcode of the guest
   email_address: Optional[str] = Field(default=None)  # email address of the guest
   phone_number: Optional[str] = Field(default=None)  # phone number of the guest
+
+  @field_validator("date_booked", mode="before")
+  def parse_date_booked(cls, value):
+    if isinstance(value, str):
+      return parse(value)
+    return value
+  
+  @field_validator("check_in", mode="before")
+  def parse_check_in(cls, value):
+    if isinstance(value, str):
+      return parse(value)
+    return value
 
 
 class BookingDetail(BaseModel):
@@ -66,5 +79,5 @@ class CancelledBooking(BaseModel):
   @field_validator("booking_change_date", mode="before")
   def parse_booking_change_date(cls, value):
     if isinstance(value, str):
-      return datetime.strptime(value, "%d-%m-%Y %H:%M:%S")
+      return parse(value)
     return value
