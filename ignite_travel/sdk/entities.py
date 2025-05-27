@@ -38,6 +38,7 @@ class RoomDetail(BaseModel):
   children: int = Field(default=0)  # number of children
   infants: int = Field(default=0)  # number of infants
   special_requests: Optional[str] = Field(default=None)  # special requests
+  first_name: Optional[str] = Field(default=None)  # first name of the guest
   surname: Optional[str] = Field(default=None)  # surname of the guest
   address: Optional[str] = Field(default=None)  # address of the guest
   suburb: Optional[str] = Field(default=None)  # suburb of the guest
@@ -67,6 +68,12 @@ class BookingDetail(BaseModel):
   booking_status_id: int = Field()
   booking_status_description: str = Field()
   rooms: List[RoomDetail] = Field()
+
+  def to_dict(self):
+    return {
+      "strPartySurname": self.rooms[0].surname,
+      "strPartyFirstName": self.rooms[0].first_name,
+    }
 
 
 class CancelledBooking(BaseModel):

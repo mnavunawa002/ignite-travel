@@ -239,6 +239,7 @@ class DimsInventoryClient:
         children = room_details.find(".//Children").text
         infants = room_details.find(".//Infants").text
         special_requests = room_details.find(".//SpecialRequests").text if room_details.find(".//SpecialRequests") is not None else None
+        first_name = room_details.find(".//GivenNames").text if room_details.find(".//GivenNames") is not None else None
         surname = room_details.find(".//Surname").text if room_details.find(".//Surname") is not None else None
         address = room_details.find(".//Address").text if room_details.find(".//Address") is not None else None
         suburb = room_details.find(".//Suburb").text if room_details.find(".//Suburb") is not None else None
@@ -257,6 +258,7 @@ class DimsInventoryClient:
           children=children,
           infants=infants,
           special_requests=special_requests,
+          first_name=first_name,
           surname=surname,
           address=address,
           suburb=suburb,
