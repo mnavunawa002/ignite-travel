@@ -39,8 +39,8 @@ class TestBookings(unittest.TestCase):
                                             <BookingId>11111</BookingId>
                                             <RoomDescription>Prestige Water Villa</RoomDescription>
                                             <RoomId>18178</RoomId>
-                                            <DateBooked>2025-06-01</DateBooked>
-                                            <CheckIn>2025-06-01</CheckIn>
+                                            <DateBooked>01-06-2025 00:00:00</DateBooked>
+                                            <CheckIn>01-06-2025</CheckIn>
                                             <Nights>1</Nights>
                                             <Adults>2</Adults>
                                             <Children>0</Children>
@@ -131,6 +131,7 @@ class TestBookings(unittest.TestCase):
         bookings = self.client.get_bookings(self.resort_id, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
         self.assertTrue(isinstance(bookings, list))
         self.assertEqual(len(bookings), 1)
+        print(bookings)
 
 if __name__ == '__main__':
     unittest.main()

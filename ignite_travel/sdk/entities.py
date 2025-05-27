@@ -56,7 +56,7 @@ class RoomDetail(BaseModel):
   @field_validator("check_in", mode="before")
   def parse_check_in(cls, value):
     if isinstance(value, str):
-      return parse(value)
+      return datetime.strptime(value, "%d-%m-%Y").date()
     return value
 
 
@@ -68,12 +68,6 @@ class BookingDetail(BaseModel):
   booking_status_id: int = Field()
   booking_status_description: str = Field()
   rooms: List[RoomDetail] = Field()
-
-  def to_dict(self):
-    return {
-      "strPartySurname": self.rooms[0].surname,
-      "strPartyFirstName": self.rooms[0].first_name,
-    }
 
 
 class CancelledBooking(BaseModel):
