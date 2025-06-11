@@ -49,6 +49,13 @@ To use the Ignite Travel SDK, you need to set up your environment with the neces
     update_response = client.update_availability(room_id, resort_id, date, quantity)
     print(update_response)
 
+    # update inventory for a given date range
+    room_id = 456
+    dates = ["01-01-2023", "02-01-2023", "03-01-2023"]
+    quantities = [10, 15, 20]
+    update_response = client.availability_mass_update(room_id, resort_id, dates, quantities)
+    print(update_response)
+
     # Get bookings for a specific date range
     bookings = client.get_bookings(resort_id, start_date, end_date)
     print(bookings)
