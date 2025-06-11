@@ -9,6 +9,10 @@ from .entities import *
 
 from datetime import date, datetime
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 
 class DimsInventoryClient:
   # URLs for the inventory and rates services
@@ -148,6 +152,53 @@ class DimsInventoryClient:
     # ensure the availability is sorted by dtm
     availability.sort(key=lambda x: x.dtm)  # sort the availability by dtm i,e current date to end date
     return availability
+  
+  def availability_mass_update(self, room_id:int, resort_id:int, dates:List[str], qty:int, action_header: str = "UpdateInventory") -> str:
+    """
+    Update the availability for a given room and date range
+    """
+    try:
+      room_id = int(room_id)
+      resort_id = int(resort_id)
+    except ValueError:
+      raise ValueError("Room ID, Resort ID and Quantity must be integers")
+    # check if the dates are valid
+    dates_list = []
+    qty_list = []
+    for date, qty in zip(dates, qty):
+      try:
+        date = datetime.strptime(date, "%d-%m-%Y").date()
+        qty = int(qty)
+      except ValueError:
+        raise ValueError("Invalid date format")
+      dates_list.append(date)
+      qty_list.append(qty)
+    
+    # create the dates set
+    dates_set = []
+    for date, qty in zip(dates_list, qty_list):
+      dates_set.append(f"<DatesSet><Date>{date}</Date><InventoryAllocation>{qty}</InventoryAllocation></DatesSet>")
+    
+    dates_set = "\n".join(dates_set)
+
+    # create the soap body
+    soap_body = f"""<UpdateInventory xmlns="https://dims.ignitetravel.com/IMSXML">
+            <Message>
+                <RewardsCorpIMS xmlns="">
+                    <Request>InventoryUpdate</Request>
+                    <RoomId>{room_id}</RoomId>
+                    <ResortId>{resort_id}</ResortId>
+                    <Dates>
+                        {dates_set}
+                    </Dates>
+                </RewardsCorpIMS>
+            </Message>
+        </UpdateInventory>"""
+    response = self.make_request("POST", soap_body, action_header)
+    root = ET.fromstring(response)
+    message = root.find(".//Message").text
+    return message
+
   
   def update_availability(self, room_id:int, resort_id:int, date:str, qty:int, action_header: str = "UpdateInventory") -> str:
     """

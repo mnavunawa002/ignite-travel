@@ -41,13 +41,16 @@ class TestGetAvailability(unittest.TestCase):
         message = self.client.update_availability(room.room_id, self.resort_id, self.end_date.strftime("%d-%m-%Y"), 10)
         self.assertEqual(message, "Update Successful")
 
-
-    def test_update_availability_invalid_room_id(self):
+    def test_availability_mass_update(self):
         """
-        Test the update_availability method with an invalid room id
+        Test the availability_mass_update method
         """
-        message = self.client.update_availability(100, self.resort_id, self.end_date.strftime("%d-%m-%Y"), 10)
-        self.assertNotEqual(message, "Update Successful")
+        room_list = self.client.get_roomlist(self.resort_id)
+        room = room_list.rooms[0]
+        dates = [self.end_date + timedelta(days=i) for i in range(365)]
+        qty = [10 for _ in range(365)]
+        message = self.client.availability_mass_update(room.room_id, self.resort_id, [date.strftime("%d-%m-%Y") for date in dates], qty)
+        self.assertEqual(message, "Update Successful")
 
 
 if __name__ == '__main__':
